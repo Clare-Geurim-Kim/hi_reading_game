@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>독서감상문 퍼즐 마스터</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        :root {
+            --book-color: #4facfe;
+            --me-color: #43e97b;
+            --thought-color: #fa709a;
+            --bg-color: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Jua', sans-serif;
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            word-break: keep-all;
+        }
+
+        /* 게임 화면 요소 */
+        .game-screen {
+            display: none;
+        }
+
+        .question-card {
+            background: #fff;
+            border: 3px solid #eee;
+            border-radius: 15px;
+            padding: 2rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            word-break: keep-all;
+            line-height: 1.6;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .choice-btn {
+            border: none;
+            border-radius: 15px;
+            padding: 15px 5px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 110px;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .choice-btn span.desc {
+            font-size: 0.8rem;
+            font-weight: normal;
+            font-family: 'Noto Sans KR', sans-serif;
+            opacity: 0.95;
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+        .btn-book { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); box-shadow: 0 4px 0 #2c8ac8; }
+        .btn-me { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); box-shadow: 0 4px 0 #2dbd5c; }
+        .btn-thought { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); box-shadow: 0 4px 0 #d64d7d; }
+
+        .btn-icon { font-size: 2rem; }
+
+        /* 진행도 바 */
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #fa709a);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 결과 화면 */
+        .result-screen {
+            display: none;
+        }
+
+        .score-text {
+            font-family: 'Jua', sans-serif;
+            font-size: 2rem;
+            color: #6c5ce7;
+            margin: 20px 0;
+        }
+
+        .feedback-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: left;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            max-height: 250px;
+            overflow-y: auto;
+            word-break: keep-all;
+            line-height: 1.8;
+        }
+
+        .start-btn, .restart-btn {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.4rem;
+            font-family: 'Jua', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #4834d4;
+            transition: transform 0.1s;
+        }
+
+        .start-btn:hover, .restart-btn:hover {
+            background: #5f4dd0;
+        }
+
+        .start-btn:active, .restart-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        /* 정답/오답 애니메이션 */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .feedback-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+            text-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .info-text {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 시작 화면 -->
+        <div id="startScreen">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🧩</div>
+            <h1>독서감상문<br>퍼즐 마스터</h1>
+            <p class="subtitle">문장을 읽고 알맞은 퍼즐 조각으로 분류해줘!<br>3가지 조각을 모으면 멋진 글이 완성돼.</p>
+            
+            <div style="background: #f1f3f5; padding: 15px; border-radius: 15px; margin-bottom: 30px; text-align: left;">
+                <div style="margin-bottom: 8px;"><strong>📘 책 조각:</strong> 기억에 남는 장면이나 내용</div>
+                <div style="margin-bottom: 8px;"><strong>🙋‍♀️ 나 조각:</strong> 나의 경험이나 공감하는 마음</div>
+                <div><strong>💡 생각 조각:</strong> 새롭게 알게 된 점이나 다짐</div>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">게임 시작!</button>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div id="gameScreen" class="game-screen">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="question-count" id="questionCount" style="color:#888; margin-bottom:5px; font-size:0.9rem;">문제 1 / 10</div>
+            
+            <div class="question-card" id="questionText">
+                문제가 여기에 나옵니다.
+            </div>
+
+            <div class="buttons-grid">
+                <button class="choice-btn btn-book" onclick="checkAnswer('book')">
+                    <span class="btn-icon">📘</span>
+                    책 조각
+                    <span class="desc">내용 / 줄거리</span>
+                </button>
+                <button class="choice-btn btn-me" onclick="checkAnswer('me')">
+                    <span class="btn-icon">🙋‍♀️</span>
+                    나 조각
+                    <span class="desc">경험 / 공감</span>
+                </button>
+                <button class="choice-btn btn-thought" onclick="checkAnswer('thought')">
+                    <span class="btn-icon">💡</span>
+                    생각 조각
+                    <span class="desc">메시지 / 다짐</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="result-screen">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+            <h1>퍼즐 완성!</h1>
+            <div class="score-text" id="finalScore">점수: 0점</div>
+            <p style="color: #666; margin-bottom: 20px;">여러분이 모은 조각으로 멋진 글이 탄생했어요!</p>
+            
+            <div class="feedback-box">
+                <div style="text-align: center; margin-bottom: 15px; font-family: 'Jua'; font-size: 1.2rem; color: #333;">[ 오늘의 독서감상문 ]</div>
+                <span style="color:#2c8ac8; font-weight:bold;">(책)</span> 민들레가 강아지똥을 안아주는 장면이 가장 기억에 남는다.<br><br>
+                <span style="color:#2dbd5c; font-weight:bold;">(나)</span> 나도 힘들 때 친구가 위로해 주어서 마음이 따뜻했던 적이 있다.<br><br>
+                <span style="color:#d64d7d; font-weight:bold;">(생각)</span> 이 책을 읽고 세상에 쓸모없는 것은 없다는 것을 알게 되었다. 나도 친구에게 힘을 주는 사람이 되고 싶다.
+            </div>
+
+            <button class="restart-btn" onclick="startGame()">다시 도전!</button>
+        </div>
+
+        <div id="feedbackIcon" class="feedback-modal"></div>
+    </div>
+
+    <script>
+        // 문제 데이터 (강아지똥 이야기 + 4학년 수준 예시)
+        const allQuestions = [
+            { text: "민들레 싹이 강아지똥을 꼭 껴안아 주는 장면이 기억에 남습니다.", type: "book" },
+            { text: "나도 줄넘기 시험을 망쳐서 속상했던 적이 있습니다.", type: "me" },
+            { text: "이 책을 읽고 세상에 쓸모없는 것은 없다는 것을 알게 되었습니다.", type: "thought" },
+            { text: "강아지똥이 자신의 몸을 녹여 거름이 되는 모습이 감동적이었습니다.", type: "book" },
+            { text: "만약 나라면 강아지똥에게 '넌 소중해'라고 말해주었을 것입니다.", type: "me" },
+            { text: "앞으로는 친구의 겉모습만 보고 놀리지 않겠다고 다짐했습니다.", type: "thought" },
+            { text: "참새가 강아지똥을 더럽다고 놀리며 날아갔습니다.", type: "book" },
+            { text: "친구와 싸우고 나서 화해했을 때의 내 기분이 떠올랐습니다.", type: "me" },
+            { text: "나도 민들레처럼 다른 사람에게 도움을 주는 사람이 되고 싶습니다.", type: "thought" },
+            { text: "흙덩이가 수레바퀴 자국에 떨어져 우는 장면이 슬펐습니다.", type: "book" }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function startGame() {
+            currentQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            score = 0;
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            updateQuestion();
+        }
+
+        function updateQuestion() {
+            const progress = (currentIndex / currentQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('questionCount').innerText = `남은 퍼즐: ${currentQuestions.length - currentIndex}개`;
+            
+            const card = document.getElementById('questionText');
+            card.style.opacity = 0;
+            card.style.transform = "translateY(10px)";
+            
+            setTimeout(() => {
+                card.innerText = currentQuestions[currentIndex].text;
+                card.style.opacity = 1;
+                card.style.transform = "translateY(0)";
+            }, 100);
+        }
+
+        function checkAnswer(userType) {
+            const correctType = currentQuestions[currentIndex].type;
+            const feedbackIcon = document.getElementById('feedbackIcon');
+
+            if (userType === correctType) {
+                score += 10;
+                feedbackIcon.innerText = "⭕";
+                feedbackIcon.style.opacity = 1;
+                setTimeout(() => feedbackIcon.style.opacity = 0, 500);
+            } else {
+                feedbackIcon.innerText = "❌";
+                feedbackIcon.style.opacity = 1;
+                document.getElementById('questionText').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('questionText').classList.remove('shake');
+                    feedbackIcon.style.opacity = 0;
+                }, 500);
+            }
+
+            currentIndex++;
+
+            if (currentIndex < currentQuestions.length) {
+                setTimeout(updateQuestion, 700);
+            } else {
+                setTimeout(showResult, 700);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            document.getElementById('finalScore').innerText = `점수: ${score}점 / 100점`;
+            
+            const finalTitle = document.querySelector('#resultScreen h1');
+            if(score === 100) {
+                finalTitle.innerText = "퍼즐 마스터 등극! 👑";
+                finalTitle.style.color = "#6c5ce7";
+            } else if (score >= 70) {
+                finalTitle.innerText = "멋진 감상문 완성! 🎉";
+                finalTitle.style.color = "#2dbd5c";
+            } else {
+                finalTitle.innerText = "조금 더 힘내세요! 💪";
+                finalTitle.style.color = "#333";
+            }
+        }
+    </script>
+</body>
+</html>
