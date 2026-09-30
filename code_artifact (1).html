@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>분실물 탐정단 - 초등 영어 게임</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+        }
+        .font-english {
+            font-family: 'Nunito', sans-serif;
+        }
+        @keyframes pulse-light {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .pulse-btn {
+            animation: pulse-light 2s infinite ease-in-out;
+        }
+        .character-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .character-card:not(.disabled):hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between bg-slate-50">
+
+    <!-- Header / Navbar -->
+    <header class="bg-amber-400 border-b-4 border-amber-500 shadow-md py-3 px-4 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl" role="img" aria-label="탐정 돋보기">🔍</span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">분실물 탐정단</h1>
+                    <p class="text-xs text-amber-950 font-semibold hidden sm:block">물건의 주인을 찾는 영어 탐정 게임</p>
+                </div>
+            </div>
+            <div id="game-stats" class="hidden flex items-center gap-3">
+                <div class="bg-amber-100 text-amber-950 px-3.5 py-1.5 rounded-full font-bold text-sm border-2 border-amber-300 shadow-sm flex items-center gap-1.5">
+                    <span>찾은 물건:</span>
+                    <span id="found-count" class="text-emerald-600 text-lg font-black">0</span> / 5
+                </div>
+                <button onclick="confirmResetGame()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm transition shadow border-b-2 border-rose-700 active:translate-y-0.5">
+                    🔄 새 게임
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto w-full p-4 flex-grow flex flex-col justify-center">
+
+        <!-- ================= 1. START SCREEN ================= -->
+        <section id="start-screen" class="bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-amber-200 text-center max-w-2xl mx-auto my-auto my-6">
+            <div class="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-amber-300 text-5xl shadow-inner">
+                🕵️‍♂️
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-3">분실물 탐정단에 오신 것을 환영합니다!</h2>
+            <p class="text-slate-600 mb-6 text-base md:text-lg leading-relaxed">
+                학교 신발장에 주인 잃은 물건 5개가 있어요.<br>
+                친구들에게 맞춤 질문을 하고 진짜 주인을 찾아주세요!
+            </p>
+
+            <!-- Learning Sentences Card -->
+            <div class="bg-amber-50 rounded-2xl p-4 mb-6 text-left border-2 border-amber-200 shadow-sm">
+                <h3 class="font-bold text-amber-950 mb-2.5 flex items-center gap-2 text-base">
+                    <span>💡</span> 이번 단원 주요 표현:
+                </h3>
+                <ul class="space-y-1.5 text-sm md:text-base font-english text-slate-700">
+                    <li class="flex items-center gap-2"><span class="text-amber-600">❓</span> <strong>Is this your ...?</strong> <span class="text-xs font-sans text-slate-500">(이것은 너의 ~이니?)</span></li>
+                    <li class="flex items-center gap-2"><span class="text-emerald-600">⭕</span> <strong>Yes, it is.</strong> <span class="text-xs font-sans text-slate-500">(응, 맞아.)</span></li>
+                    <li class="flex items-center gap-2"><span class="text-rose-600">❌</span> <strong>No, it isn't.</strong> <span class="text-xs font-sans text-slate-500">(아니, 아니야.)</span></li>
+                </ul>
+            </div>
+
+            <!-- Items preview -->
+            <div class="flex justify-center gap-3 mb-8 flex-wrap">
+                <div class="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200 text-center w-16 shadow-sm" title="손목시계">⌚<div class="text-xs font-bold mt-1 text-slate-600">시계</div></div>
+                <div class="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200 text-center w-16 shadow-sm" title="야구 모자">🧢<div class="text-xs font-bold mt-1 text-slate-600">모자</div></div>
+                <div class="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200 text-center w-16 shadow-sm" title="우산">☂️<div class="text-xs font-bold mt-1 text-slate-600">우산</div></div>
+                <div class="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200 text-center w-16 shadow-sm" title="자전거 헬멧">🪖<div class="text-xs font-bold mt-1 text-slate-600">헬멧</div></div>
+                <div class="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200 text-center w-16 shadow-sm" title="재킷">🧥<div class="text-xs font-bold mt-1 text-slate-600">재킷</div></div>
+            </div>
+
+            <button onclick="startGame()" class="pulse-btn bg-amber-500 hover:bg-amber-600 text-slate-900 font-black text-xl px-10 py-4 rounded-2xl shadow-lg border-b-4 border-amber-700 transition active:translate-y-1 w-full sm:w-auto">
+                🚀 탐정 활동 시작하기
+            </button>
+        </section>
+
+        <!-- ================= 2. MAIN GAME SCREEN ================= -->
+        <section id="game-screen" class="hidden flex flex-col gap-6">
+
+            <!-- Item Selector Carousel -->
+            <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-slate-200">
+                <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">탐색할 분실물을 선택하세요:</h3>
+                <div id="items-bar" class="grid grid-cols-5 gap-2 md:gap-4">
+                    <!-- Dynamic rendering of 5 items -->
+                </div>
+            </div>
+
+            <!-- Main Interactive Play Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Left Column: Item Detail & Question Selection (5 cols) -->
+                <div class="lg:col-span-5 flex flex-col gap-4">
+
+                    <!-- Current Selected Item Display -->
+                    <div class="bg-white p-5 rounded-3xl shadow-md border-2 border-slate-200 flex flex-col items-center text-center relative">
+                        <span id="completed-stamp" class="hidden absolute top-3 right-3 bg-emerald-100 text-emerald-800 border-2 border-emerald-400 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm">
+                            ✅ 주인 찾기 완료
+                        </span>
+
+                        <div id="item-svg-container" class="w-40 h-40 md:w-48 md:h-48 my-2 flex items-center justify-center p-2 bg-amber-50/60 rounded-2xl border-2 border-amber-100 shadow-inner">
+                            <!-- SVG rendered here -->
+                        </div>
+
+                        <!-- Word Hint Area -->
+                        <div class="mt-2 flex items-center gap-2">
+                            <span id="item-word-hint" class="font-english font-black text-2xl text-slate-800 tracking-wide bg-slate-100 px-4 py-1 rounded-xl hidden border border-slate-300">
+                                watch
+                            </span>
+                            <button id="hint-btn" onclick="toggleWordHint()" class="bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-sm">
+                                💡 단어 힌트
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Question Selection Card -->
+                    <div class="bg-white p-5 rounded-3xl shadow-md border-2 border-slate-200 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm md:text-base flex items-center gap-1.5">
+                                <span>1️⃣</span> 알맞은 질문을 선택하세요:
+                            </h3>
+                        </div>
+
+                        <div id="questions-list" class="flex flex-col gap-2">
+                            <!-- Dynamic 5 Questions -->
+                        </div>
+
+                        <div id="question-feedback" class="text-xs md:text-sm font-bold min-h-[28px] px-3 py-1.5 rounded-xl text-center flex items-center justify-center">
+                            <!-- Feedback message displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Character Selection & Dialogue (7 cols) -->
+                <div class="lg:col-span-7 flex flex-col gap-4">
+
+                    <!-- Target Sentence Highlight & Speech Prompt -->
+                    <div id="speech-prompt-card" class="bg-gradient-to-r from-amber-100 via-amber-50 to-orange-100 p-4 rounded-2xl border-2 border-amber-300 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1 inline-block">선택한 질문</span>
+                            <p id="selected-question-text" class="font-english font-black text-lg md:text-xl text-amber-950">
+                                질문을 먼저 고르세요.
+                            </p>
+                        </div>
+                        <button id="listen-question-btn" onclick="speakCurrentQuestion()" disabled class="bg-white hover:bg-amber-50 text-amber-800 border-2 border-amber-300 p-2.5 rounded-xl text-lg disabled:opacity-40 transition shadow-sm shrink-0" title="질문 소리 듣기">
+                            🔊
+                        </button>
+                    </div>
+
+                    <!-- Characters List -->
+                    <div class="bg-white p-4 md:p-5 rounded-3xl shadow-md border-2 border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-sm md:text-base mb-3 flex items-center gap-1.5">
+                            <span>2️⃣</span> 질문할 인물을 선택하세요:
+                        </h3>
+
+                        <div id="characters-grid" class="grid grid-cols-5 gap-2 sm:gap-3">
+                            <!-- Dynamic 5 Characters -->
+                        </div>
+                    </div>
+
+                    <!-- Dialogue Box & Action Buttons -->
+                    <div class="bg-white p-5 rounded-3xl shadow-md border-2 border-slate-200 flex flex-col justify-between flex-grow min-h-[220px]">
+                        
+                        <!-- Dialogue Area -->
+                        <div id="dialogue-area" class="flex flex-col justify-center gap-3 my-auto py-2">
+                            <div class="text-center text-slate-400 py-6 text-sm">
+                                💬 물건에 알맞은 질문을 고르고, 친구를 선택한 후 <strong>'물어보기'</strong>를 누르세요.
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons Row -->
+                        <div class="flex gap-3 pt-3 border-t border-slate-100 mt-2">
+                            <button id="ask-btn" onclick="askSelectedCharacter()" disabled class="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-900 font-extrabold py-3 rounded-2xl shadow border-b-2 border-amber-700 disabled:border-slate-300 text-base md:text-lg transition active:translate-y-0.5">
+                                💬 물어보기
+                            </button>
+                            <button id="return-btn" onclick="returnItemToOwner()" disabled class="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold py-3 rounded-2xl shadow border-b-2 border-emerald-700 disabled:border-slate-300 text-base md:text-lg transition pulse-btn disabled:animate-none active:translate-y-0.5">
+                               🎁 돌려주기
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= 3. COMPLETION SCREEN ================= -->
+        <section id="completion-screen" class="hidden bg-white rounded-3xl p-6 md:p-10 shadow-2xl border-4 border-emerald-300 text-center max-w-3xl mx-auto my-auto my-6">
+            <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-400 text-5xl shadow-inner">
+                🏆
+            </div>
+            <h2 class="text-3xl font-black text-slate-800 mb-2">축하합니다! 임무 완료!</h2>
+            <p class="text-slate-600 text-lg mb-6">분실물 5개의 주인을 모두 찾아주었습니다. 최고예요!</p>
+
+            <!-- Summary Table / Cards -->
+            <div class="bg-emerald-50 rounded-2xl p-5 mb-8 border-2 border-emerald-200 shadow-sm">
+                <h3 class="font-bold text-emerald-950 mb-4 text-left flex items-center gap-2 text-base">
+                    📋 분실물 및 주인 확인 목록:
+                </h3>
+                <div id="completion-summary-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Dynamic Summary items rendered here -->
+                </div>
+            </div>
+
+            <button onclick="confirmResetGame(true)" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xl px-10 py-4 rounded-2xl shadow-lg border-b-4 border-amber-700 transition active:translate-y-1">
+                🔄 새 게임 시작하기
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-3 text-center text-xs text-slate-500">
+        초등 4학년 영어 - Is this your watch? | 단원 학습 웹앱
+    </footer>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="modal-overlay" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-2 border-amber-300 text-center">
+            <div class="text-4xl mb-3">❓</div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2" id="modal-title">새 게임을 시작할까요?</h3>
+            <p class="text-sm text-slate-600 mb-6" id="modal-body">지금까지 찾은 기록을 지우고 주인을 다시 배정합니다.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border-2 border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm">
+                    취소
+                </button>
+                <button id="modal-confirm-btn" onclick="executeResetGame()" class="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow">
+                    네, 시작합니다
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Static definitions for 5 items
+        const ITEMS = [
+            {
+                id: 'watch',
+                nameKo: '손목시계',
+                wordEn: 'watch',
+                question: 'Is this your watch?',
+                ariaLabel: '손목시계 그림',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                    <rect x="38" y="5" width="24" height="90" rx="6" fill="#64748b"/>
+                    <rect x="42" y="10" width="16" height="80" fill="#475569"/>
+                    <circle cx="50" cy="50" r="28" fill="#e2e8f0" stroke="#1e293b" stroke-width="4"/>
+                    <circle cx="50" cy="50" r="22" fill="#ffffff"/>
+                    <line x1="50" y1="31" x2="50" y2="34" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="50" y1="66" x2="50" y2="69" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="31" y1="50" x2="34" y2="50" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="66" y1="50" x2="69" y2="50" stroke="#1e293b" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="50" y2="38" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="50" y1="50" x2="60" y2="50" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="3" fill="#1e293b"/>
+                </svg>`
+            },
+            {
+                id: 'cap',
+                nameKo: '야구 모자',
+                wordEn: 'cap',
+                question: 'Is this your cap?',
+                ariaLabel: '야구 모자 그림',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                    <path d="M 15 65 Q 50 85 85 65 Q 50 60 15 65 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+                    <path d="M 20 62 Q 22 25 50 25 Q 78 25 80 62 Z" fill="#3b82f6" stroke="#1d4ed8" stroke-width="3"/>
+                    <circle cx="50" cy="25" r="4" fill="#fbbf24"/>
+                    <polygon points="50,38 52,44 58,44 53,48 55,54 50,50 45,54 47,48 42,44 48,44" fill="#ffffff"/>
+                </svg>`
+            },
+            {
+                id: 'umbrella',
+                nameKo: '우산',
+                wordEn: 'umbrella',
+                question: 'Is this your umbrella?',
+                ariaLabel: '우산 그림',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                    <path d="M 50 50 L 50 80 Q 50 90 40 90 Q 32 90 35 82" fill="none" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M 10 52 Q 50 15 90 52 Q 70 46 50 52 Q 30 46 10 52 Z" fill="#ec4899" stroke="#be185d" stroke-width="3"/>
+                    <path d="M 30 48 Q 50 15 70 48 Q 50 46 30 48 Z" fill="#f472b6"/>
+                    <line x1="50" y1="15" x2="50" y2="10" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+                </svg>`
+            },
+            {
+                id: 'helmet',
+                nameKo: '자전거 헬멧',
+                wordEn: 'helmet',
+                question: 'Is this your helmet?',
+                ariaLabel: '자전거 헬멧 그림',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                    <path d="M 25 55 L 45 82 L 50 82 L 75 55" fill="none" stroke="#475569" stroke-width="3"/>
+                    <rect x="42" y="78" width="12" height="6" fill="#0f172a" rx="1"/>
+                    <path d="M 15 58 Q 15 20 50 20 Q 85 20 85 58 Q 50 64 15 58 Z" fill="#10b981" stroke="#047857" stroke-width="3"/>
+                    <path d="M 30 35 Q 40 30 45 38" stroke="#047857" stroke-width="4" stroke-linecap="round" fill="none"/>
+                    <path d="M 55 38 Q 60 30 70 35" stroke="#047857" stroke-width="4" stroke-linecap="round" fill="none"/>
+                    <path d="M 75 50 L 90 55 L 80 60 Z" fill="#047857"/>
+                </svg>`
+            },
+            {
+                id: 'jacket',
+                nameKo: '재킷',
+                wordEn: 'jacket',
+                question: 'Is this your jacket?',
+                ariaLabel: '재킷 그림',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                    <path d="M 25 30 L 10 45 L 20 58 L 28 50 L 28 85 L 72 85 L 72 50 L 80 58 L 90 45 L 75 30 Q 50 38 25 30 Z" fill="#f97316" stroke="#c2410c" stroke-width="3"/>
+                    <path d="M 35 32 L 50 55 L 65 32" fill="none" stroke="#fef08a" stroke-width="4"/>
+                    <line x1="50" y1="55" x2="50" y2="85" stroke="#c2410c" stroke-width="2" stroke-dasharray="2,2"/>
+                    <rect x="32" y="65" width="10" height="10" fill="#ea580c" rx="2"/>
+                    <rect x="58" y="65" width="10" height="10" fill="#ea580c" rx="2"/>
+                </svg>`
+            }
+        ];
+
+        // Static definitions for 5 characters
+        const CHARACTERS = [
+            {
+                id: 'alex',
+                name: 'Alex',
+                gender: 'boy',
+                bgHex: '#3b82f6',
+                avatarSvg: `<svg viewBox="0 0 80 80" class="w-full h-full">
+                    <circle cx="40" cy="40" r="38" fill="#dbeafe"/>
+                    <circle cx="40" cy="44" r="22" fill="#fde047"/>
+                    <path d="M 20 40 Q 20 20 40 20 Q 60 20 60 40 Q 50 22 40 22 Q 30 22 20 40 Z" fill="#78350f"/>
+                    <circle cx="33" cy="42" r="3" fill="#1e293b"/>
+                    <circle cx="47" cy="42" r="3" fill="#1e293b"/>
+                    <path d="M 34 50 Q 40 56 46 50" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>`
+            },
+            {
+                id: 'jamie',
+                name: 'Jamie',
+                gender: 'girl',
+                bgHex: '#ec4899',
+                avatarSvg: `<svg viewBox="0 0 80 80" class="w-full h-full">
+                    <circle cx="40" cy="40" r="38" fill="#fce7f3"/>
+                    <path d="M 16 48 Q 16 18 40 18 Q 64 18 64 48 Q 68 62 60 62 Q 54 30 40 25 Q 26 30 20 62 Q 12 62 16 48 Z" fill="#ea580c"/>
+                    <circle cx="40" cy="44" r="20" fill="#fde047"/>
+                    <circle cx="32" cy="42" r="6" fill="none" stroke="#0284c7" stroke-width="2"/>
+                    <circle cx="48" cy="42" r="6" fill="none" stroke="#0284c7" stroke-width="2"/>
+                    <line x1="38" y1="42" x2="42" y2="42" stroke="#0284c7" stroke-width="2"/>
+                    <circle cx="32" cy="42" r="2" fill="#1e293b"/>
+                    <circle cx="48" cy="42" r="2" fill="#1e293b"/>
+                    <path d="M 35 52 Q 40 57 45 52" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                </svg>`
+            },
+            {
+                id: 'sam',
+                name: 'Sam',
+                gender: 'boy',
+                bgHex: '#10b981',
+                avatarSvg: `<svg viewBox="0 0 80 80" class="w-full h-full">
+                    <circle cx="40" cy="40" r="38" fill="#d1fae5"/>
+                    <circle cx="40" cy="44" r="22" fill="#fcd34d"/>
+                    <path d="M 18 38 Q 18 16 40 16 Q 62 16 62 38 C 55 25 48 24 40 24 C 32 24 25 25 18 38 Z" fill="#1e293b"/>
+                    <circle cx="22" cy="28" r="6" fill="#1e293b"/>
+                    <circle cx="58" cy="28" r="6" fill="#1e293b"/>
+                    <circle cx="40" cy="18" r="7" fill="#1e293b"/>
+                    <circle cx="33" cy="42" r="3" fill="#1e293b"/>
+                    <circle cx="47" cy="42" r="3" fill="#1e293b"/>
+                    <path d="M 33 50 Q 40 58 47 50 Z" fill="#ef4444"/>
+                </svg>`
+            },
+            {
+                id: 'taylor',
+                name: 'Taylor',
+                gender: 'girl',
+                bgHex: '#8b5cf6',
+                avatarSvg: `<svg viewBox="0 0 80 80" class="w-full h-full">
+                    <circle cx="40" cy="40" r="38" fill="#ede9fe"/>
+                    <circle cx="15" cy="35" r="9" fill="#0284c7"/>
+                    <circle cx="65" cy="35" r="9" fill="#0284c7"/>
+                    <circle cx="40" cy="44" r="21" fill="#fed7aa"/>
+                    <path d="M 20 40 Q 40 22 60 40 C 50 28 30 28 20 40 Z" fill="#0284c7"/>
+                    <circle cx="33" cy="42" r="3" fill="#1e293b"/>
+                    <circle cx="47" cy="42" r="3" fill="#1e293b"/>
+                    <path d="M 35 51 Q 40 56 45 51" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>`
+            },
+            {
+                id: 'robin',
+                name: 'Robin',
+                gender: 'boy',
+                bgHex: '#f59e0b',
+                avatarSvg: `<svg viewBox="0 0 80 80" class="w-full h-full">
+                    <circle cx="40" cy="40" r="38" fill="#fef3c7"/>
+                    <circle cx="40" cy="44" r="22" fill="#ffedd5"/>
+                    <path d="M 18 38 L 26 24 L 34 30 L 40 18 L 46 30 L 54 24 L 62 38 Z" fill="#f59e0b"/>
+                    <circle cx="28" cy="46" r="1" fill="#b45309"/>
+                    <circle cx="30" cy="48" r="1" fill="#b45309"/>
+                    <circle cx="50" cy="48" r="1" fill="#b45309"/>
+                    <circle cx="52" cy="46" r="1" fill="#b45309"/>
+                    <circle cx="33" cy="41" r="3" fill="#1e293b"/>
+                    <circle cx="47" cy="41" r="3" fill="#1e293b"/>
+                    <path d="M 34 50 Q 40 56 46 50" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>`
+            }
+        ];
+
+        let ownerMapping = {}; // { itemId: charId }
+        let completedItems = {}; // { itemId: charId }
+        let itemAskHistory = {}; // { itemId: [charId1, charId2, ...] }
+        let currentItemId = 'watch';
+        let selectedQuestionIndex = null;
+        let selectedCharId = null;
+        let currentQuestionShuffled = [];
+        let isWordHintVisible = false;
+        let isCurrentResponseYes = false;
+
+        // Web Speech API speech synthesis wrapper
+        function speakEnglishText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop any playing utterance immediately
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85; // Slightly slower speech rate for elementary school learners
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startGame() {
+            initNewGameData();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('completion-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-stats').classList.remove('hidden');
+            
+            renderItemsBar();
+            selectItem(ITEMS[0].id);
+        }
+
+        function initNewGameData() {
+            // Random 1-to-1 owner assignment
+            const charsShuffled = [...CHARACTERS].sort(() => Math.random() - 0.5);
+            ownerMapping = {};
+            completedItems = {};
+            itemAskHistory = {};
+
+            ITEMS.forEach((item, index) => {
+                ownerMapping[item.id] = charsShuffled[index].id;
+                itemAskHistory[item.id] = [];
+            });
+
+            updateProgressStats();
+        }
+
+        function updateProgressStats() {
+            const count = Object.keys(completedItems).length;
+            document.getElementById('found-count').textContent = count;
+        }
+
+        function renderItemsBar() {
+            const container = document.getElementById('items-bar');
+            container.innerHTML = '';
+
+            ITEMS.forEach(item => {
+                const isCompleted = !!completedItems[item.id];
+                const isSelected = item.id === currentItemId;
+
+                const btn = document.createElement('button');
+                btn.onclick = () => selectItem(item.id);
+                btn.className = `relative p-2 rounded-2xl border-2 flex flex-col items-center justify-center transition ${
+                    isSelected ? 'bg-amber-100 border-amber-500 ring-2 ring-amber-400' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                }`;
+
+                btn.innerHTML = `
+                    <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                        ${item.svg}
+                    </div>
+                    <span class="text-xs font-bold mt-1 text-slate-700">${item.nameKo}</span>
+                    ${isCompleted ? '<span class="absolute -top-2 -right-2 bg-emerald-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center shadow">✓</span>' : ''}
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectItem(itemId) {
+            currentItemId = itemId;
+            selectedQuestionIndex = null;
+            selectedCharId = null;
+            isWordHintVisible = false;
+            isCurrentResponseYes = false;
+
+            // Prepare questions shuffled for this item view selection
+            currentQuestionShuffled = [...ITEMS].sort(() => Math.random() - 0.5);
+
+            // Hide word hint reset
+            const hintElem = document.getElementById('item-word-hint');
+            hintElem.classList.add('hidden');
+            const hintBtn = document.getElementById('hint-btn');
+            hintBtn.textContent = "💡 단어 힌트";
+
+            renderItemsBar();
+            renderSelectedItemDetails();
+            renderQuestionsList();
+            renderCharactersGrid();
+            resetDialogueArea();
+            updateActionButtons();
+        }
+
+        function renderSelectedItemDetails() {
+            const item = ITEMS.find(i => i.id === currentItemId);
+            const isCompleted = !!completedItems[item.id];
+
+            document.getElementById('item-svg-container').innerHTML = item.svg;
+            document.getElementById('item-word-hint').textContent = item.wordEn;
+
+            const stamp = document.getElementById('completed-stamp');
+            if (isCompleted) {
+                const owner = CHARACTERS.find(c => c.id === completedItems[item.id]);
+                stamp.textContent = `✅ 주인: ${owner.name}`;
+                stamp.classList.remove('hidden');
+            } else {
+                stamp.classList.add('hidden');
+            }
+        }
+
+        function toggleWordHint() {
+            isWordHintVisible = !isWordHintVisible;
+            const hintElem = document.getElementById('item-word-hint');
+            const hintBtn = document.getElementById('hint-btn');
+
+            if (isWordHintVisible) {
+                hintElem.classList.remove('hidden');
+                hintBtn.textContent = "🙈 힌트 숨기기";
+            } else {
+                hintElem.classList.add('hidden');
+                hintBtn.textContent = "💡 단어 힌트";
+            }
+        }
+
+        function renderQuestionsList() {
+            const container = document.getElementById('questions-list');
+            container.innerHTML = '';
+
+            currentQuestionShuffled.forEach((itemObj, index) => {
+                const isSelected = selectedQuestionIndex === index;
+                const btn = document.createElement('button');
+                btn.onclick = () => selectQuestion(index, itemObj);
+                btn.className = `w-full text-left p-3 rounded-xl border-2 font-english text-sm md:text-base font-bold transition flex items-center justify-between ${
+                    isSelected
+                        ? 'bg-amber-500 border-amber-700 text-slate-900 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`;
+
+                btn.innerHTML = `
+                    <span>${itemObj.question}</span>
+                    <span class="text-xs ${isSelected ? 'text-amber-950 font-sans font-bold' : 'text-slate-400 font-sans'}">선택</span>
+                `;
+                container.appendChild(btn);
+            });
+
+            updateQuestionFeedback();
+        }
+
+        function selectQuestion(index, itemObj) {
+            selectedQuestionIndex = index;
+            renderQuestionsList();
+
+            const promptText = document.getElementById('selected-question-text');
+            const listenBtn = document.getElementById('listen-question-btn');
+
+            promptText.textContent = itemObj.question;
+            listenBtn.disabled = false;
+
+            // Automatically speak the selected question aloud on click
+            speakEnglishText(itemObj.question);
+
+            updateActionButtons();
+        }
+
+        function updateQuestionFeedback() {
+            const feedbackElem = document.getElementById('question-feedback');
+            feedbackElem.className = "text-xs md:text-sm font-bold min-h-[28px] px-3 py-1.5 rounded-xl text-center transition flex items-center justify-center";
+
+            if (selectedQuestionIndex === null) {
+                feedbackElem.textContent = "물건 그림을 확인하고 알맞은 질문을 선택해 보세요.";
+                feedbackElem.classList.add('text-slate-500', 'bg-slate-100');
+                return;
+            }
+
+            const chosenObj = currentQuestionShuffled[selectedQuestionIndex];
+            const currentItem = ITEMS.find(i => i.id === currentItemId);
+
+            if (chosenObj.id === currentItem.id) {
+                feedbackElem.textContent = "🎯 정답 질문입니다! 소리 내어 읽고 질문할 친구를 선택해 보세요.";
+                feedbackElem.classList.add('bg-emerald-100', 'text-emerald-800');
+            } else {
+                feedbackElem.textContent = "❌ 그림을 다시 보고 물건에 맞는 질문을 골라 보세요.";
+                feedbackElem.classList.add('bg-rose-100', 'text-rose-800');
+            }
+        }
+
+        function speakCurrentQuestion() {
+            if (selectedQuestionIndex === null) return;
+            const chosenObj = currentQuestionShuffled[selectedQuestionIndex];
+            speakEnglishText(chosenObj.question);
+        }
+
+        function renderCharactersGrid() {
+            const container = document.getElementById('characters-grid');
+            container.innerHTML = '';
+
+            const askedList = itemAskHistory[currentItemId] || [];
+
+            CHARACTERS.forEach(char => {
+                const isSelected = selectedCharId === char.id;
+                const isAskedNo = askedList.includes(char.id);
+                const isOwnerFound = completedItems[currentItemId] === char.id;
+
+                const btn = document.createElement('button');
+                btn.disabled = isAskedNo || !!completedItems[currentItemId];
+                btn.onclick = () => selectCharacter(char.id);
+
+                let borderBgClass = 'bg-slate-50 border-slate-200 hover:bg-slate-100';
+                if (isSelected) borderBgClass = 'bg-amber-100 border-amber-500 ring-2 ring-amber-400';
+                if (isAskedNo) borderBgClass = 'bg-slate-100 border-slate-200 opacity-40 cursor-not-allowed';
+                if (isOwnerFound) borderBgClass = 'bg-emerald-100 border-emerald-400 font-bold';
+
+                btn.className = `character-card p-2 rounded-2xl border-2 flex flex-col items-center relative ${borderBgClass}`;
+
+                btn.innerHTML = `
+                    <div class="w-10 h-10 sm:w-12 sm:h-12">
+                        ${char.avatarSvg}
+                    </div>
+                    <span class="text-xs font-extrabold mt-1 text-slate-800">${char.name}</span>
+                    ${isAskedNo ? '<span class="text-[10px] bg-rose-500 text-white font-bold px-1 rounded absolute -top-1 -right-1">No</span>' : ''}
+                    ${isOwnerFound ? '<span class="text-[10px] bg-emerald-600 text-white font-bold px-1 rounded absolute -top-1 -right-1">주인</span>' : ''}
+                `;
+
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCharacter(charId) {
+            if (completedItems[currentItemId]) return;
+            selectedCharId = charId;
+            renderCharactersGrid();
+            updateActionButtons();
+        }
+
+        function updateActionButtons() {
+            const askBtn = document.getElementById('ask-btn');
+            const returnBtn = document.getElementById('return-btn');
+
+            const isItemCompleted = !!completedItems[currentItemId];
+
+            // Ask button active ONLY IF:
+            // 1. Correct question is selected
+            // 2. A valid character is selected
+            // 3. Item is not yet completed
+            const isCorrectQuestion = (selectedQuestionIndex !== null) && 
+                (currentQuestionShuffled[selectedQuestionIndex].id === currentItemId);
+
+            askBtn.disabled = !isCorrectQuestion || !selectedCharId || isItemCompleted;
+
+            // Return button active ONLY IF: Current response is Yes and item not yet returned
+            returnBtn.disabled = !isCurrentResponseYes || isItemCompleted;
+        }
+
+        function resetDialogueArea() {
+            const dialogueArea = document.getElementById('dialogue-area');
+            const isCompleted = !!completedItems[currentItemId];
+
+            if (isCompleted) {
+                const char = CHARACTERS.find(c => c.id === completedItems[currentItemId]);
+                dialogueArea.innerHTML = `
+                    <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-200 text-center">
+                        <p class="text-emerald-900 font-bold text-sm">🎉 ${char.name}에게 물건을 성공적으로 돌려주었습니다!</p>
+                    </div>
+                `;
+            } else {
+                dialogueArea.innerHTML = `
+                    <div class="text-center text-slate-400 py-6 text-sm">
+                        💬 물건에 알맞은 질문을 고르고, 친구를 선택한 후 <strong>'물어보기'</strong>를 누르세요.
+                    </div>
+                `;
+            }
+        }
+
+        function askSelectedCharacter() {
+            if (!selectedCharId || selectedQuestionIndex === null) return;
+
+            const char = CHARACTERS.find(c => c.id === selectedCharId);
+            const actualOwnerId = ownerMapping[currentItemId];
+            const isOwner = (selectedCharId === actualOwnerId);
+
+            const chosenQuestion = currentQuestionShuffled[selectedQuestionIndex].question;
+            const responseText = isOwner ? "Yes, it is." : "No, it isn't.";
+
+            isCurrentResponseYes = isOwner;
+
+            // Record ask history if No
+            if (!isOwner) {
+                if (!itemAskHistory[currentItemId].includes(selectedCharId)) {
+                    itemAskHistory[currentItemId].push(selectedCharId);
+                }
+            }
+
+            // Speak character's answer aloud
+            speakEnglishText(responseText);
+
+            // Render Dialogue Bubbles
+            const dialogueArea = document.getElementById('dialogue-area');
+            dialogueArea.innerHTML = `
+                <!-- Student Question Bubble -->
+                <div class="flex items-start gap-2 justify-end mb-2">
+                    <div class="bg-amber-400 text-slate-900 font-english font-extrabold px-4 py-2 rounded-2xl rounded-tr-none text-sm md:text-base shadow-sm max-w-[80%]">
+                        ${chosenQuestion}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold shrink-0">🕵️</div>
+                </div>
+
+                <!-- Character Answer Bubble -->
+                <div class="flex items-start gap-2 justify-start">
+                    <div class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-300">
+                        ${char.avatarSvg}
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs font-bold text-slate-500">${char.name}</span>
+                        <div class="${isOwner ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-800'} font-english font-black text-lg px-4 py-2 rounded-2xl rounded-tl-none shadow-sm inline-block">
+                            ${responseText}
+                        </div>
+                        <p class="text-xs font-bold ${isOwner ? 'text-emerald-700' : 'text-rose-600'} mt-1">
+                            ${isOwner ? '✨ 주인을 찾았어요! \'돌려주기\' 버튼을 누르세요.' : '❌ 이 친구의 물건이 아니에요. 다른 친구에게 물어보세요.'}
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            renderCharactersGrid();
+            updateActionButtons();
+        }
+
+        function returnItemToOwner() {
+            if (!isCurrentResponseYes || !selectedCharId) return;
+
+            // Mark item as completed
+            completedItems[currentItemId] = selectedCharId;
+            updateProgressStats();
+
+            // Refresh view
+            renderItemsBar();
+            renderSelectedItemDetails();
+            renderCharactersGrid();
+            resetDialogueArea();
+
+            // Check if all 5 completed
+            if (Object.keys(completedItems).length === 5) {
+                setTimeout(showCompletionScreen, 800);
+            }
+        }
+
+        function showCompletionScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('completion-screen').classList.remove('hidden');
+
+            const grid = document.getElementById('completion-summary-grid');
+            grid.innerHTML = '';
+
+            ITEMS.forEach(item => {
+                const ownerId = completedItems[item.id];
+                const char = CHARACTERS.find(c => c.id === ownerId);
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl border-2 border-emerald-200 flex items-center gap-3 shadow-sm";
+                card.innerHTML = `
+                    <div class="w-12 h-12 bg-amber-50 rounded-lg p-1 border border-amber-200 shrink-0">
+                        ${item.svg}
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xs font-bold text-slate-400">${item.nameKo} (${item.wordEn})</div>
+                        <div class="text-sm font-extrabold text-slate-800 flex items-center gap-1">
+                            <span>주인:</span>
+                            <span class="text-emerald-600">${char.name}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function confirmResetGame(direct = false) {
+            if (direct) {
+                executeResetGame();
+                return;
+            }
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        function executeResetGame() {
+            closeModal();
+            initNewGameData();
+            document.getElementById('completion-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            selectItem(ITEMS[0].id);
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            if (!('speechSynthesis' in window)) {
+                console.warn('Web Speech API is not supported in this browser environment.');
+            }
+        };
+    </script>
+</body>
+</html>
